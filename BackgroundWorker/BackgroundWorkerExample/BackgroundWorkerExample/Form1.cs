@@ -9,28 +9,26 @@ namespace BackgroundWorkerExample
 
         private void backgroundWorker_DoWork(object sender, System.ComponentModel.DoWorkEventArgs e)
         {
-            int sum = 0;
             // You can use a try-catch block to handle an exception
             //try
             //{
-                for (int i = 0; i <= 100; i++)
+            for (int i = 0; i <= 100; i++)
+            {
+                Thread.Sleep(100);
+                backgroundWorker.ReportProgress(i);
+
+                if (backgroundWorker.CancellationPending)
                 {
-                    Thread.Sleep(100);
-                    sum += i;
-                    backgroundWorker.ReportProgress(i);
-
-                    if (backgroundWorker.CancellationPending)
-                    {
-                        e.Cancel = true;
-                        backgroundWorker.ReportProgress(0);
-                        return;
-                    }
-
-                    // If an exception is thrown it will be added to the RunWorkerCompletedEventArgs.Error
-                    // and can be accessed in the RunWorkerCompleted event handler.
-                    // Uncomment the next line to see what happens when a exception is thrown.
-                    // throw new InvalidOperationException("Random exception.");
+                    e.Cancel = true;
+                    backgroundWorker.ReportProgress(0);
+                    return;
                 }
+
+                // If an exception is thrown it will be added to the RunWorkerCompletedEventArgs.Error
+                // and can be accessed in the RunWorkerCompleted event handler.
+                // Uncomment the next line to see what happens when a exception is thrown.
+                // throw new InvalidOperationException("Random exception.");
+            }
             //}
             //catch (Exception ex)
             //{
@@ -39,7 +37,7 @@ namespace BackgroundWorkerExample
             //    throw;
             //}
 
-            e.Result = sum;
+            e.Result = "Completed";
         }
 
         private void backgroundWorker_ProgressChanged(object sender, System.ComponentModel.ProgressChangedEventArgs e)
@@ -57,6 +55,10 @@ namespace BackgroundWorkerExample
             else if (e.Error is not null)
             {
                 progressLabel.Text = e.Error.Message;
+            }
+            else
+            {
+                progressLabel.Text = e.Result?.ToString();
             }
         }
 
