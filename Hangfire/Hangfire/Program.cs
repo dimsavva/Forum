@@ -14,6 +14,8 @@ namespace HangfireExample
 {
     public class Program
     {
+        // global execution count
+        public static int ExecutionCount = 0;
         public static void Main(string[] args)
         {
             CreateHostBuilder(args).Build().Run();
@@ -26,31 +28,41 @@ namespace HangfireExample
                  logging.ClearProviders();
                  logging.AddConsole();
                  logging.AddFilter(new Func<LogLevel, bool>(level => level == LogLevel.None));
-                 })
-             .ConfigureServices((hostContext, services) =>
-                {
-                    services.AddHangfire(configuration => configuration
-                        .UseSimpleAssemblyNameTypeSerializer()
-                        .UseRecommendedSerializerSettings()
-                        .UseMemoryStorage());
+             })
+            .ConfigureServices((hostContext, services) =>
+            {
+                services.AddHangfire(configuration => configuration
+                    .UseMemoryStorage());
 
-                    services.AddHangfireServer();
+                services.AddHangfireServer();
 
-                })
-                .ConfigureWebHostDefaults(webBuilder =>
+            })
+            .ConfigureWebHostDefaults(webBuilder =>
+            {
+                webBuilder.Configure(app =>
                 {
-                    webBuilder.Configure(app =>
-                    {
-                        app.UseHangfireDashboard();
-                        // Now it's safe to use the Hangfire API to schedule jobs
-                        RecurringJob.AddOrUpdate("fetch-crypto-prices", () => FetchAndDisplayCryptoPrices(), "*/5 * * * * *");
-                    });
+                    app.UseHangfireDashboard();
+                    RecurringJob.AddOrUpdate("fetch-crypto-prices", () => FetchAndDisplayCryptoPrices(), "*/5 * * * * *");
                 });
+            });
 
+        [AutomaticRetry(Attempts = 3, LogEvents = true, OnAttemptsExceeded = AttemptsExceededAction.Fail)]
         public static async Task FetchAndDisplayCryptoPrices()
         {
             try
             {
+                //  throw an exception on the 3rd execution
+
+                if (ExecutionCount == 2)
+                {
+                    throw new Exception("Something went wrong.");
+                }
+
+                ExecutionCount++;
+                 
+                
+
+
                 Console.WriteLine("Fetching crypto prices...");
 
                 HttpClient httpClient = new HttpClient();
@@ -70,6 +82,7 @@ namespace HangfireExample
             }
             catch (Exception ex)
             {
+                // Add custom error handling here
                 Console.WriteLine($"An error occurred: {ex.Message}");
                 throw;
             }
