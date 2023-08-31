@@ -9,11 +9,6 @@ namespace HostedServiceExampleConsole
         public static void Main(string[] args)
         {
             CreateHostBuilder(args).Build().Run();
-            while (true)
-            {
-                Console.WriteLine("Run main application flow");
-                Thread.Sleep(TimeSpan.FromSeconds(2));
-            }
         }
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>
@@ -46,7 +41,6 @@ namespace HostedServiceExampleConsole
                     try
                     {
                         await Task.Delay(TimeSpan.FromSeconds(2), cancellationToken);
-                        throw new InvalidOperationException();
                     }
                     catch (OperationCanceledException) { }
                 }
