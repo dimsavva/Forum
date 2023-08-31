@@ -14,8 +14,6 @@ namespace HangfireExample
 {
     public class Program
     {
-        // global execution count
-        public static int ExecutionCount = 0;
         public static void Main(string[] args)
         {
             CreateHostBuilder(args).Build().Run();
@@ -51,18 +49,6 @@ namespace HangfireExample
         {
             try
             {
-                //  throw an exception on the 3rd execution
-
-                if (ExecutionCount == 2)
-                {
-                    throw new Exception("Something went wrong.");
-                }
-
-                ExecutionCount++;
-                 
-                
-
-
                 Console.WriteLine("Fetching crypto prices...");
 
                 HttpClient httpClient = new HttpClient();
